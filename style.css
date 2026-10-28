@@ -1,0 +1,883 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+@font-face {
+  font-family: "Spider";
+  src: url("assets/good-times.otf");
+}
+
+html, body{
+overscroll-behavior-y: none;
+}
+
+
+body {
+  overflow-x: hidden;
+  background-color: #000;
+}
+
+:root {
+  --branco: rgba(255, 255, 255, 0.9);
+  --branco2: rgba(255, 255, 255, 0.8);
+  --branco3: rgba(255, 255, 255, 0.7);
+  --padding: clamp(16px, 1.5vw, 1.5vw);
+  --padding2: clamp(16px, 3vw, 3vw);
+  --fonts: clamp(14px, 1vw, 1vw);
+  --fontf: "Poppins", sans-serif;
+  --fontf2: "Spider", "Poppins", sans-serif;
+}
+
+body {
+  font-family: var(--fontf);
+}
+
+button {
+  border: none;
+  background-color: var(--branco);
+  font-size: var(--fonts);
+  font-family: var(--fontf);
+  padding: clamp(16px, 0.75vw, 0.75vw) clamp(20px, 1vw, 1vw);
+  border-radius: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4vw;
+  color: rgba(0, 0, 0, 0.9);
+}
+
+/* ===== PRELOADER ===== */
+.preloader {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background-color: #000;
+  overflow: hidden;
+  will-change: transform;
+}
+
+.preloaderLogo {
+  position: absolute;
+  top: 2vw;
+  left: 2vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.7vw;
+  z-index: 4;
+}
+.preloaderLogo img:first-child {
+  width: 14vw;
+}
+.preloaderLogo img:last-child {
+  width: 11vw;
+}
+
+.preloaderContador {
+  position: absolute;
+  right: 2.2vw;
+  bottom: 1.8vw;
+  color: var(--branco);
+  font-family: var(--fontf);
+  font-weight: 300;
+  font-size: clamp(28px, 3.4vw, 3.4vw);
+  line-height: 1;
+  z-index: 4;
+}
+
+/* Linha da teia: SVG que cobre a tela toda; os pontos vêm do JS */
+.preloaderLinha {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 4;
+  opacity: 0; /* o GSAP revela depois de zerar o drawSVG */
+}
+
+/* Teia no canto inferior esquerdo (posicionada como no Figma:
+   afastada do fundo para sobrar um respiro embaixo) */
+.preloaderTeia {
+  position: absolute;
+  left: 1.5vw;
+  bottom: 8vh;
+  width: min(25vw, 48vh);
+  aspect-ratio: 1 / 1;
+  z-index: 4;
+  opacity: 0; /* o GSAP revela depois de zerar o drawSVG */
+}
+
+/* Mão: o wrapper é movido pelo GSAP; a rotação fica na imagem
+   (assim o transform do GSAP não sobrescreve a rotação) */
+.preloaderMao {
+  position: absolute;
+  top: calc(50% - 12.5vw);
+  right: -7vw; /* mão entra cortada pela borda direita (teia vem "de fora") */
+  width: 22vw;
+  aspect-ratio: 203 / 236;
+  z-index: 3;
+}
+.preloaderMao img {
+  width: 100%;
+  height: 100%;
+  /* o SVG aponta para baixo-esquerda (formato mobile);
+     no desktop rotaciona para apontar para a esquerda */
+  transform: rotate(40deg);
+}
+
+/* Layout mobile do preloader (Figma): logo + contador centralizados,
+   mão no canto superior direito e teia embaixo à esquerda */
+@media (max-width: 1024px) {
+  .preloaderLogo {
+    top: 41%;
+    left: 50%;
+    transform: translateX(-50%);
+    gap: 8px;
+  }
+  .preloaderLogo img:first-child {
+    width: 45vw;
+  }
+  .preloaderLogo img:last-child {
+    width: 36vw;
+  }
+
+  .preloaderContador {
+    right: auto;
+    bottom: auto;
+    left: 50%;
+    top: 54%;
+    transform: translateX(-50%);
+    font-size: 24px;
+    font-weight: 400;
+  }
+
+  .preloaderMao {
+    top: -16vw;
+    right: 20vw;
+    width: 54vw;
+    
+  }
+  .preloaderMao img {
+    transform: none; 
+  }
+
+  .preloaderTeia {
+    left: -6vw;
+    bottom: -8vw;
+    width: 62vw;
+  }
+}
+
+.clip-svg {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+.hero {
+  background-color: #69040c;
+  position: relative;
+  width: 100%;
+  height: 100svh;
+  padding: 1.5vw;
+}
+.bgFundo {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+  mix-blend-mode: soft-light;
+}
+
+/* Wrapper do card do vídeo: no desktop cobre a área útil inteira (o clip
+   ocupa quase a tela toda); no mobile vira o card menor no fim da coluna */
+.cardWrap {
+  position: absolute;
+  inset: 0;
+}
+
+.container {
+  width: 100%;
+  height: 100%;
+  clip-path: url(#heroClip);
+  -webkit-clip-path: url(#heroClip);
+  background-color: #69040c;
+  position: relative;
+  overflow: hidden;
+  .frames {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+  }
+}
+
+.conteudo {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--padding);
+
+  .esquerda {
+    /* posicionado para pintar acima do .cardWrap (que também é posicionado) */
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 1vw;
+
+    img {
+      width: 24vw;
+    }
+  }
+
+  .direita {
+    mix-blend-mode: difference;
+    color: white;
+    opacity: 0.8;
+    width: 27%;
+    font-size: clamp(16px, 1.2vw, 1.2vw);
+    position: relative;
+    p {
+      position: absolute;
+      top: 0;
+    }
+    p:nth-child(1) {
+      position: relative;
+    }
+  }
+
+  .rolePagina {
+    position: absolute;
+    right: 4vw;
+    bottom: 4vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .texto {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      animation: rotacionar 6s linear infinite;
+      
+      mix-blend-mode: difference;
+
+      img{
+        width: 10vw;
+        height: 10vw;
+      }
+      
+    }
+
+    .mao {
+      width: 4.3vw;
+    }
+  }
+}
+
+/* Elementos que só existem no layout mobile */
+.btnMobile,
+.logoSpiderCard,
+.logoMarvelCard,
+.dataLancamentoCard {
+  display: none;
+}
+
+@keyframes rotacionar {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+header {
+  position: absolute;
+  top: 0vw;
+  left: 0vw;
+  padding: 1.5vw;
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+
+  .logos {
+    display: flex;
+    gap: 1.7vw;
+    align-items: center;
+    justify-content: start;
+
+    .logoSpider {
+      width: 2vw;
+    }
+    .logoMarvel {
+      width: 4vw;
+    }
+  }
+  .chamada {
+    display: flex;
+    align-items: center;
+    justify-content: end;
+    gap: 2vw;
+
+    h3 {
+      font-size: var(--fonts);
+      color: var(--branco2);
+      font-weight: 400;
+    }
+  }
+}
+
+.dataLancamento {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  color: var(--branco);
+  padding: var(--padding);
+
+  h3 {
+    font-size: var(--fonts);
+    font-weight: 400;
+    opacity: 0.8;
+  }
+
+  h2 {
+    font-family: var(--fontf2);
+    font-size: 2.7vw;
+  }
+}
+
+/* ===== SEÇÃO DO TRAILER ===== */
+
+.divTrailer{
+  width: 100vw;
+  height: 100svh;
+  top: 0;
+  left: 0;
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99;
+  
+  /* o overlay em si não captura cliques (senão os botões por baixo
+     ficariam inacessíveis); só o .trailer dentro dele captura */
+  pointer-events: none;
+}
+
+.trailer {
+  width: 100vw;
+  height: 100svh;
+  position: relative;
+  overflow: hidden;
+  border-radius: 0px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  pointer-events: auto;
+  background-color: black;
+}
+
+.trailer video {
+  width: 100vw;
+  height: auto;
+  
+  object-fit: cover;
+  display: block;
+}
+
+/* Botão de play centralizado. O ::before dele cria o backdrop escuro que
+   cobre o vídeo inteiro (escurece um pouco enquanto está no modo "prévia"). */
+.trailerPlay {
+  position: absolute;
+  inset: 0; /* ocupa o vídeo todo, para o clique funcionar em qualquer lugar */
+  margin: auto;
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: opacity 0.4s ease;
+}
+
+.trailerPlay::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.45); /* escurece o vídeo */
+}
+
+/* Círculo com o ícone de play (fica acima do backdrop) */
+.trailerPlay svg {
+  position: relative;
+  width: clamp(56px, 5vw, 5vw);
+  height: clamp(56px, 5vw, 5vw);
+  padding: 1.1vw;
+  fill: #fff;
+  background-color: rgba(255, 255, 255, 0.15);
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  backdrop-filter: blur(4px);
+  transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+.trailerPlay:hover svg {
+  transform: scale(1.08);
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Estado "tocando com som": esconde o backdrop e o play */
+.trailer.playing .trailerPlay {
+  opacity: 0;
+  pointer-events: none;
+}
+
+
+
+/* =====RESPONSIVIDADE ===== */
+
+@media (max-width: 1280px) {
+  .container {
+    clip-path: url(#heroClipNotebook);
+    -webkit-clip-path: url(#heroClipNotebook);
+  }
+}
+@media (min-width: 769px) and (max-width: 1183px) {
+  .chamada h3{
+    display: none;
+  }
+}
+/* Celular e tablet compartilham o mesmo layout em coluna (o formato muda
+   pouco). Tablets em paisagem acima de 1024px caem no layout de desktop. */
+@media (max-width: 1024px) {
+  .hero {
+    padding: 0;
+  
+  }
+
+  .bgFundo {
+    object-fit: cover;
+    object-position: right bottom;
+    opacity: 0.4;
+  }
+
+  /* Vira uma coluna: título → texto → botão → card do vídeo */
+  .conteudo {
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: stretch;
+    padding: 0 20px max(13px, env(safe-area-inset-bottom));
+  }
+
+  .conteudo .esquerda {
+    margin-top: clamp(14px, 6.3svh, 48px);
+    align-items: center;
+    gap: clamp(4px, 1svh, 8px);
+  }
+  /* min() com vh: em telas baixas o título encolhe junto com a altura */
+  .conteudo .esquerda img {
+    width: min(100%, 47svh);
+  }
+  .conteudo .esquerda img + img {
+    width: min(83.6%, 39svh);
+  }
+
+  .conteudo .direita {
+    width: 100%;
+    margin-top: clamp(10px, 3.3vh, 25px);
+    mix-blend-mode: normal;
+    opacity: 1;
+    font-size: clamp(16px, 4.07vw, 16px);
+    /* reserva a altura do maior dos 3 textos (eles são empilhados em
+       absolute para a troca animada) para o botão não ficar por cima */
+    min-height: 7.5em;
+  }
+
+  .btnMobile {
+    display: flex;
+    align-self: flex-start;
+    margin-top: 16px;
+    padding: 14px 16px;
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    gap: 4px;
+  }
+  .btnMobile img {
+    width: 22px;
+  }
+
+  /* O card ocupa toda a altura que sobrar na coluna */
+  .cardWrap {
+    position: relative;
+    inset: auto;
+    order: 4;
+    flex: 1;
+    min-height: 80px;
+    /* -9px: o card vai até 11px da borda da tela (conteúdo fica a 20px) */
+    margin: clamp(10px, 6.6vh, 50px) -9px 0;
+    container-type: size;
+  }
+
+  .container {
+    clip-path: url(#heroClipMobile);
+    -webkit-clip-path: url(#heroClipMobile);
+  }
+
+  /* Logos e data encaixados nos recortes do card */
+  .logoSpiderCard {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 9px;
+    width: 22px;
+  }
+  .logoMarvelCard {
+    display: block;
+    position: absolute;
+    top: 1px;
+    right: 8px;
+    width: 56px;
+  }
+
+  .dataLancamentoCard {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    position: absolute;
+    left: 9px;
+    bottom: 0;
+  }
+  .dataLancamentoCard h3 {
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--branco2);
+  }
+  .dataLancamentoCard h2 {
+    font-family: var(--fontf2);
+    font-weight: 400;
+    font-size: clamp(22px, 8.65vw, 34px);
+    color: var(--branco);
+  }
+
+  /* Como os recortes do clip escalam com o card, em cards muito baixos os
+     logos e a data encolhem junto (cqh = % da altura do .cardWrap) */
+  @supports (height: 1cqh) {
+    .logoSpiderCard {
+      width: auto;
+      height: 7vw
+    }
+    .logoMarvelCard {
+      width: auto;
+      height: 4.5vw;
+    }
+    .dataLancamentoCard h3 {
+      font-size: min(12px, 4cqh);
+    }
+    .dataLancamentoCard h2 {
+      font-size: min(clamp(22px, 8.65vw, 34px), 11cqh);
+    }
+  }
+
+  /* Versões desktop escondidas no celular */
+  header,
+  .dataLancamento,
+  .conteudo .rolePagina {
+    display: none;
+  }
+}
+
+/* Celular/tablet deitado: o texto quebra em menos linhas, reserva menos altura */
+@media (max-width: 1024px) and (orientation: landscape) {
+  .conteudo .direita {
+    min-height: 4.5em;
+  }
+}
+
+/* ===== SEÇÃO ELENCO ===== */
+.elenco {
+  --railH: 12vw;
+  
+  position: relative;
+  padding: var(--padding2);
+  width: 100%;
+  height: 100svh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #000;
+  overflow: hidden;
+  gap: var(--padding);
+  color: #fff;
+}
+
+/* ---------- Coluna esquerda ---------- */
+.elencoEsquerda {
+  width: 18vw;
+  display: flex;
+  flex-direction: column;
+  gap: 7.2vw;
+}
+
+/* Botão só existe no layout mobile */
+.btnElenco {
+  display: none;
+}
+
+.elencoTitulo {
+  font-family: var(--fontf2);
+  font-weight: 400;
+  font-size: clamp(20px, 1.6vw, 1.6vw);
+  color: var(--branco3);
+}
+
+.elencoInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 10.1vw;
+}
+
+.atorNomes {
+  position: relative;
+  
+}
+.atorBloco {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.26vw;
+}
+.atorBloco h3 {
+  font-weight: 400;
+  font-size: clamp(20px, 2.19vw, 2.19vw);
+  line-height: 1;
+}
+.atorBloco p {
+  font-weight: 400;
+  font-size: var(--fonts);
+  color: rgba(255, 255, 255, 0.75);
+  text-transform: uppercase;
+}
+
+.progresso {
+  display: flex;
+  gap: 2.5vw;
+}
+
+.trilha {
+  position: relative;
+  
+}
+
+.trilhaLinha,
+.trilhaFill {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1px;
+}
+.trilhaLinha {
+  top: 0;
+  bottom: 0;
+  background-color: #666;
+}
+.trilhaFill {
+  top: 0;
+  height: 0; 
+  background-color: #fff;
+}
+
+.ponto {
+  position: absolute;
+  left: 50%;
+  width: 0.31vw;
+  height: 0.31vw;
+  border-radius: 50%;
+  background-color: #666;
+  transform: translate(-50%, -50%);
+}
+/* a aranha que desce pela trilha */
+.aranha {
+  position: absolute;
+  left: 50%;
+  top: 0; /* animado de 0 -> 100% */
+  width: 1.4vw;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+}
+
+/* Lista de nomes: mesma altura da trilha, distribuída p/ alinhar com as bolinhas */
+.progressoNomes {
+  list-style: none;
+ gap: clamp(28px, 2vw, 2vw);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.progressoNomes li {
+  font-size: clamp(13px, .8vw, .8vw);
+  text-transform: uppercase;
+  color: #666;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+/* ---------- Coluna direita (imagens) ---------- */
+.elencoDireita {
+  flex: 1;
+  height: 100%;
+  position: relative;
+  border-radius: clamp(20px, 3vw, 3vw);
+  overflow: hidden;
+  border: 3px solid rgb(43, 43, 43);
+}
+/* cada imagem vive numa div com altura 0, revelada de baixo p/ cima */
+.atorImg {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 0;
+  display: flex;
+ 
+  overflow: hidden;
+  
+}
+.atorImg img {
+
+
+  width: 100%;
+  height: 100svh;
+  object-fit: cover;
+}
+
+/* ===== ELENCO RESPONSIVA (layout do Figma para celular e tablet) ===== */
+@media (max-width: 1024px) {
+  .elenco {
+   
+    height: 100svh; 
+    padding: clamp(40px, 5svh, 50px) 20px max(40px, env(safe-area-inset-bottom));
+
+    /* Vira um grid:
+       linha 1 = título | linha 2 = imagem | linha 3-4 = nome+botão à
+       esquerda e a barra de progresso (só a aranha) à direita */
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto minmax(80px, 1fr) auto auto;
+    grid-template-areas:
+      "titulo    titulo"
+      "imagem    imagem"
+      "nomes     progresso"
+      "botao     progresso";
+    column-gap: 16px;
+    row-gap: clamp(10px, 2.2vh, 22px);
+    align-items: center;
+    justify-items: stretch;
+  }
+
+  /* Wrappers viram "transparentes" para o grid: seus filhos (título, nomes,
+     progresso, botão) passam a ser itens diretos do grid da .elenco */
+  .elencoEsquerda,
+  .elencoInfo {
+    display: contents;
+  }
+
+  .elencoTitulo {
+    grid-area: titulo;
+    justify-self: center;
+    text-align: center;
+    font-size: clamp(24px, 8vw, 32px);
+    color: var(--branco3);
+  }
+
+  /* Card da imagem: ocupa a linha flexível (todo o espaço que sobra) */
+  .elencoDireita {
+    grid-area: imagem;
+    flex: initial;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    border: none;
+    border-radius: 20px;
+    /* referência para a imagem ter sempre a altura do card (100cqh),
+       independente da altura animada de cada .atorImg */
+    container-type: size;
+  }
+  /* a imagem preenche a altura do card, não a da viewport → "cover" real
+     e a revelação por scroll continua sendo um wipe (não estica) */
+  .atorImg img {
+    height: 100cqh;
+  }
+
+  /* Nome + papel do ator (blocos empilhados, um visível por vez) */
+  .atorNomes {
+    grid-area: nomes;
+    align-self: end;
+    min-height: 66px;
+  }
+  .atorBloco {
+    gap: 2px;
+  }
+  .atorBloco h3 {
+    font-size: clamp(22px, 7.6vw, 30px);
+  }
+  .atorBloco p {
+    font-size: clamp(12px, 3.6vw, 14px);
+  }
+
+  /* Botão abaixo do nome (largura do Figma: 223px, alinhado à esquerda) */
+  .btnElenco {
+    grid-area: botao;
+    display: flex;
+    align-self: start;
+    justify-self: start;
+    width: 100%;
+    max-width: 223px;
+    margin-top: clamp(10px, 2svh, 16px);
+    padding: 14px 16px;
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    gap: 4px;
+  }
+  .btnElenco img {
+    width: 22px;
+  }
+
+  /* Barra de progresso: só a trilha + aranha descendo (nomes não cabem) */
+  .progresso {
+    grid-area: progresso;
+    align-self: stretch;
+    justify-content: center;
+    gap: 0;
+  }
+  .progressoNomes {
+    display: none;
+  }
+  .trilha {
+    height: 100%;
+    min-height: 110px;
+    width: 22px;
+  }
+  .ponto {
+    width: 6px;
+    height: 6px;
+  }
+  .aranha {
+    width: 22px;
+  }
+}
